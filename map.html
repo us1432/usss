@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map of Memories</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .page-header {
+      background: #F6D4CF;
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+      border-bottom: 5px solid #D8928B;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .page-header h1 {
+      font-size: 2.5em;
+      margin: 0;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+      font-family: 'Georgia', serif;
+    }
+
+    .page-header p {
+      font-size: 1.2em;
+      margin: 10px 0 0;
+      font-style: italic;
+    }
+
+    #map {
+      height: 600px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>Where memories live</h1>
+    <p>Every place holds a memory, every memory tells a story of us.</p>
+  </header>
+
+  <div id="map"></div>
+
+  <script>
+    // Initialize the map
+    var map = L.map('map').setView([32.3135168, -6.3957919], 7);
+
+    // Add OpenStreetMap layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Define the custom heart-shaped icon for the markers
+    var heartIcon = L.icon({
+      iconUrl: 'image.webp', // Path to your heart image
+      iconSize: [30, 30],    // Size of the icon
+      iconAnchor: [15, 30],  // Anchor point of the icon
+      popupAnchor: [0, -30]  // Where the popup will appear in relation to the icon
+    });
+
+    // Load the CSV file
+    Papa.parse("locations_corrected.csv", {
+      download: true,
+      header: true,
+      dynamicTyping: true,
+      delimiter: ";",
+      complete: function(results) {
+        var locations = results.data;
+
+        // Add markers to the map with the custom heart icon
+        locations.forEach(function(location) {
+          if (location.Latitude && location.Longitude) {
+            var marker = L.marker([location.Latitude, location.Longitude], { icon: heartIcon }).addTo(map);
+
+            // Create popup with image and name
+            var popupContent = `
+              <img src="${location.Image}" style="width:150px; height:auto;">
+            `;
+
+            marker.bindPopup(popupContent);
+          }
+        });
+      },
+      error: function(err) {
+        console.error("Error loading CSV:", err);
+      }
+    });
+  </script>
+</body>
+</html>
